@@ -3,12 +3,9 @@
 
 {% block content %}
     <h2>Hello Flask!!</h2>
-    <ul>
-        {% for item in mylist %}
-           <li {% if item == 30 %} style="color: red" {% endif %}>{{ item }}</li>
-        {% endfor %}
-    </ul>
-    <p>List: {{ mylist }}</p>
-
-    <a href="{{ url_for('other') }}">Other</a>
+    <form method="POST" action="{{ url_for('index') }}">
+        <input type="text" name="username" placeholder="Username"><br><br>
+        <input type="password" name="password" placeholder="Password"><br><br>
+        <input type="submit" value="Login">
+    </form>
 {% endblock %}
