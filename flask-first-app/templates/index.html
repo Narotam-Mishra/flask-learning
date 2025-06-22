@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block title  %}Home Page{% endblock  %}
+
+{% block content %}
+    <h2>Hello Flask!!</h2>
+    <ul>
+        {% for item in mylist %}
+           <li {% if item == 30 %} style="color: red" {% endif %}>{{ item }}</li>
+        {% endfor %}
+    </ul>
+    <p>List: {{ mylist }}</p>
+
+    <a href="{{ url_for('other') }}">Other</a>
+{% endblock %}

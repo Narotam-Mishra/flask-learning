@@ -52,5 +52,3 @@ By passing `__name__`, Flask knows:
 Imagine `Flask(__name__)` like telling Flask:
 
 > “Hey, create an app and remember where I (this file/module) am located, so you can find other files you may need.”
-
-Let me know if you want a visual or folder structure example for static and templates usage.
