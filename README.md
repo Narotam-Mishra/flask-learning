@@ -246,3 +246,48 @@ Example scenarios:
 
 **Hybrid Approach:**
 Many applications use both - sessions for authentication and sensitive operations, cookies for user preferences and non-sensitive data that enhances user experience across visits.
+
+## DB Operations using SQLAlchemy in Flask
+
+### **Flask Database Migration with Flask-Migrate (Alembic)**
+1. **`flask db init`**  
+   - Initializes migrations for the Flask app (creates a `migrations` folder).  
+   - **Only run once per project** (unless you delete migrations and restart).  
+
+2. **`flask db migrate`**  
+   - Detects changes in SQLAlchemy models (e.g., new `People` table) and generates a migration script.  
+   - Run **whenever you modify your models** (add/remove tables, change columns).  
+
+3. **`flask db upgrade`**  
+   - Applies pending migrations to the database (creates/modifies tables).  
+   - Required after `migrate` to finalize changes.  
+
+### **Workflow for Database Changes**  
+- **Edit models** → `flask db migrate` → `flask db upgrade`.  
+- Example: Adding a new `Person` model triggers:  
+  - Detection of the new table (`people`) → Migration script → Database update.  
+
+### **Key Notes**  
+- **Never run `flask db init` twice** unless resetting migrations.  
+- Always **migrate + upgrade** after schema changes (new classes, fields).  
+- Uses **SQLAlchemy** for ORM and **Alembic** for migration tracking.  
+
+This process ensures smooth database schema evolution without manual SQL scripts.
+
+## Breakdown of the **Flask-Migrate (Alembic) commands** and their tasks:  
+
+### **Flask Database Migration Commands**  
+
+| **Command**            | **Task**                                                                 |
+|------------------------|--------------------------------------------------------------------------|
+| `flask db init`        | Initializes migration support (creates a `migrations/` folder). **Run only once per project.** |
+| `flask db migrate`     | Detects changes in SQLAlchemy models (e.g., new tables, columns) and generates a migration script. |
+| `flask db upgrade`     | Applies the latest migration to update the database schema (creates/modifies tables). |
+| `flask db downgrade`   | Reverts the last migration (undoes changes if needed). |
+
+### **Typical Workflow**  
+1. **Make changes** to your SQLAlchemy models (e.g., add a `Person` class).  
+2. Run `flask db migrate -m "Add Person table"` → Creates a migration script.  
+3. Run `flask db upgrade` → Updates the database with the changes.  
+
+- Note :- Run `flask db init` command once when we initialize the database, then run `flask db migrate` & `flask db upgrade` subsequently everything when we make chnage in database.
