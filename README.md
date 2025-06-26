@@ -291,3 +291,90 @@ This process ensures smooth database schema evolution without manual SQL scripts
 3. Run `flask db upgrade` → Updates the database with the changes.  
 
 - Note :- Run `flask db init` command once when we initialize the database, then run `flask db migrate` & `flask db upgrade` subsequently everything when we make chnage in database.
+
+## Flask-Login and Flask-Bcrypt in Flask Projects
+
+### Flask-Login
+Flask-Login provides user session management for Flask. It handles:
+- Logging users in and out
+- Remembering users' sessions
+- Protecting routes from unauthorized access
+- Managing user sessions
+
+### Flask-Bcrypt
+Flask-Bcrypt is a Flask extension for Bcrypt password hashing. It:
+- Securely hashes passwords before storing them
+- Provides password verification
+- Protects against brute-force attacks
+
+### Example Code
+
+```python
+from flask import Flask, render_template, redirect, url_for, request
+from flask_sqlalchemy import SQLAlchemy
+from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
+from flask_bcrypt import Bcrypt
+
+app = Flask(__name__)
+app.config['SECRET_KEY'] = 'your-secret-key'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///site.db'
+
+db = SQLAlchemy(app)
+bcrypt = Bcrypt(app)
+login_manager = LoginManager(app)
+login_manager.login_view = 'login'
+
+# User model
+class User(db.Model, UserMixin):
+    id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String(20), unique=True, nullable=False)
+    password = db.Column(db.String(60), nullable=False)
+
+@login_manager.user_loader
+def load_user(user_id):
+    return User.query.get(int(user_id))
+
+@app.route('/register', methods=['GET', 'POST'])
+def register():
+    if request.method == 'POST':
+        hashed_password = bcrypt.generate_password_hash(request.form['password']).decode('utf-8')
+        user = User(username=request.form['username'], password=hashed_password)
+        db.session.add(user)
+        db.session.commit()
+        return redirect(url_for('login'))
+    return render_template('register.html')
+
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if request.method == 'POST':
+        user = User.query.filter_by(username=request.form['username']).first()
+        if user and bcrypt.check_password_hash(user.password, request.form['password']):
+            login_user(user)
+            return redirect(url_for('dashboard'))
+    return render_template('login.html')
+
+@app.route('/dashboard')
+@login_required
+def dashboard():
+    return f"Welcome {current_user.username}!"
+
+@app.route('/logout')
+@login_required
+def logout():
+    logout_user()
+    return redirect(url_for('login'))
+
+if __name__ == '__main__':
+    app.run(debug=True)
+```
+
+### Key Features in the Example:
+1. `UserMixin` provides default implementations for Flask-Login's required methods
+2. `login_user()` creates a session for the user
+3. `logout_user()` removes the session
+4. `@login_required` decorator protects routes
+5. `current_user` gives access to the logged-in user
+6. `bcrypt.generate_password_hash()` securely hashes passwords
+7. `bcrypt.check_password_hash()` verifies passwords against hashes
+
+This combination provides secure authentication for Flask applications.
