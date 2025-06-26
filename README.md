@@ -378,3 +378,130 @@ if __name__ == '__main__':
 7. `bcrypt.check_password_hash()` verifies passwords against hashes
 
 This combination provides secure authentication for Flask applications.
+
+## Blueprints in Flask
+
+Blueprints are a way to organize your Flask application into smaller, reusable components. They work similarly to Flask applications but aren't actually applications - instead, they provide a way to register operations that will be executed when the blueprint is registered with an application.
+
+### Why Use Blueprints?
+
+1. **Modularity**: Break your app into smaller components
+2. **Reusability**: Use the same blueprint in multiple projects
+3. **Organization**: Keep related views and other code together
+4. **URL Prefixing**: Apply a common prefix to all routes in a blueprint
+5. **Delayed Routing**: Define routes without an application object
+
+### Basic Blueprint Example
+
+```python
+from flask import Blueprint, render_template
+
+# Create a blueprint
+auth_bp = Blueprint('auth', __name__)
+
+@auth_bp.route('/login')
+def login():
+    return render_template('login.html')
+
+@auth_bp.route('/logout')
+def logout():
+    return "Logout page"
+```
+
+### Registering a Blueprint
+
+```python
+from flask import Flask
+
+app = Flask(__name__)
+
+# Register the blueprint with the app
+app.register_blueprint(auth_bp)
+
+# You can also specify a URL prefix
+# app.register_blueprint(auth_bp, url_prefix='/auth')
+```
+
+### More Complete Example
+
+Let's create a blog application with separate blueprints for auth and posts:
+
+#### auth/views.py
+```python
+from flask import Blueprint, render_template, redirect, url_for
+
+auth_bp = Blueprint('auth', __name__, template_folder='templates')
+
+@auth_bp.route('/login')
+def login():
+    return render_template('auth/login.html')
+
+@auth_bp.route('/register')
+def register():
+    return render_template('auth/register.html')
+```
+
+#### posts/views.py
+```python
+from flask import Blueprint, render_template
+
+posts_bp = Blueprint('posts', __name__, template_folder='templates')
+
+@posts_bp.route('/')
+def index():
+    return render_template('posts/index.html')
+
+@posts_bp.route('/<int:post_id>')
+def show(post_id):
+    return render_template('posts/show.html', post_id=post_id)
+```
+
+#### app.py (main application)
+```python
+from flask import Flask
+from auth.views import auth_bp
+from posts.views import posts_bp
+
+app = Flask(__name__)
+
+# Register blueprints with URL prefixes
+app.register_blueprint(auth_bp, url_prefix='/auth')
+app.register_blueprint(posts_bp, url_prefix='/posts')
+
+if __name__ == '__main__':
+    app.run(debug=True)
+```
+
+### Blueprint Features
+
+1. **Static Files**: Blueprints can have their own static files
+```python
+admin_bp = Blueprint('admin', __name__, static_folder='static')
+```
+
+2. **Template Folder**: Blueprints can have their own template folder
+```python
+admin_bp = Blueprint('admin', __name__, template_folder='templates')
+```
+
+3. **URL Building**: Use `url_for()` with blueprint names
+```python
+url_for('auth.login')  # 'auth' is the blueprint name
+```
+
+4. **Before/After Requests**: Blueprints can have their own request handlers
+```python
+@auth_bp.before_request
+def before_auth_request():
+    if not user_authenticated():
+        return redirect(url_for('auth.login'))
+```
+
+5. **Error Handlers**: Blueprint-specific error handling
+```python
+@auth_bp.errorhandler(404)
+def auth_404(error):
+    return render_template('auth/404.html'), 404
+```
+
+- Blueprints are a powerful way to organize larger Flask applications while keeping the codebase clean and maintainable.
