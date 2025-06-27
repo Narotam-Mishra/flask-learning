@@ -28,7 +28,19 @@ def create_contact():
     
     return jsonify({"message": "User created!"}), 201
 
-@app.route("/update_contact/<int:user_id>", method=["PATCH"])
+@app.route("/contact/<int:user_id>", methods=["GET"])
+def get_contact_by_id(user_id):
+    contact = Contact.query.get(user_id)
+
+    if not contact:
+        return (
+            jsonify({ "message": "Contact not found!!"}), 
+            404,
+        )
+    return jsonify({"contact": contact.to_json()}), 200
+
+
+@app.route("/update_contact/<int:user_id>", methods=["PATCH"])
 def update_contact(user_id):
     contact = Contact.query.get(user_id)
 
